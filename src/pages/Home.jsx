@@ -52,15 +52,26 @@ function Home() {
       
       {/* 🔷 HEADER */}
       <header className="px-6 py-4 bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-blue-600">
-            MediNear
-          </h1>
-          <span className="text-sm text-gray-500">
-            Find medicines near you
-          </span>
-        </div>
-      </header>
+  <div className="max-w-6xl mx-auto flex items-center justify-between">
+    <h1 className="text-2xl font-bold text-blue-600">
+      MediNear
+    </h1>
+
+    <div className="flex items-center gap-4">
+      <span className="text-sm text-gray-500 hidden sm:block">
+        Find medicines near you
+      </span>
+
+      <button
+        onClick={() => navigate("/store/login")}
+        className="px-4 py-2 text-sm font-medium border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition"
+      >
+        Store Panel
+      </button>
+    </div>
+  </div>
+</header>
+
 
       {/* 🔶 HERO SECTION */}
       <main className="flex-1 flex items-center justify-center px-4">
