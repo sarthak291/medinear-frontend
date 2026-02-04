@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import BuyNowModal from "../components/BuyNowModal";
+const nearbyOnly = searchParams.get("nearby") === "true";
 
 function Results() {
   const [searchParams] = useSearchParams();
@@ -20,9 +21,24 @@ function Results() {
     const fetchResults = async () => {
       try {
         setLoading(true);
-        const res = await api.get(
-          `/search/medicine?query=${query}&lat=${lat}&lng=${lng}&radius=50`
-        );
+        let res;
+
+    if (nearbyOnly) {
+     // 🔹 View all medical stores near user
+     res = await api.get(
+        `/search/nearby?lat=${lat}&lng=${lng}&radius=50`
+      );
+      setMedicineName("Nearby Medical Stores");
+    } else {
+  // 🔹 Normal medicine search
+   res = await api.get(
+    `/search/medicine?query=${query}&lat=${lat}&lng=${lng}&radius=50`
+   );
+     setMedicineName(res.data.medicine || query);
+  }
+
+    setResults(res.data.results || []);
+
 
         setMedicineName(res.data.medicine || query);
         setResults(res.data.results || []);
@@ -35,7 +51,7 @@ function Results() {
     };
 
     fetchResults();
-  }, [query, lat, lng]);
+  }, [query, lat, lng, nearbyOnly]);
 
   if (loading) {
     return (
@@ -64,9 +80,18 @@ function Results() {
 
         {/* 🔹 HEADER */}
         <h2 className="text-2xl font-semibold mb-1">
-          Results for{" "}
-          <span className="text-blue-600">{medicineName}</span>
-        </h2>
+  {nearbyOnly ? (
+    <span className="text-blue-600">
+      Nearby Medical Stores
+    </span>
+  ) : (
+    <>
+      Results for{" "}
+      <span className="text-blue-600">{medicineName}</span>
+    </>
+  )}
+</h2>
+
         <p className="text-sm text-gray-500 mb-6">
           Showing nearby medical stores with available stock
         </p>
