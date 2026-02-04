@@ -70,6 +70,16 @@ function StoreLogin() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+        <p className="text-sm text-center mt-4">
+  New medical store?{" "}
+  <span
+    onClick={() => navigate("/store/signup")}
+    className="text-blue-600 cursor-pointer"
+  >
+    Register here
+  </span>
+</p>
+
       </form>
     </div>
   );

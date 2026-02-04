@@ -6,7 +6,9 @@ import Inventory from "./pages/store/Inventory";
 import StoreLogin from "./pages/store/StoreLogin";
 import Dashboard from "./pages/store/Dashboard";
 import Profile from "./pages/store/Profile";
-
+import StoreSignup from "./pages/store/StoreSignup";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import StoreLayout from "./components/store/StoreLayout";
 import StoreProtectedRoute from "./routes/StoreProtectedRoute";
 
@@ -18,6 +20,12 @@ function App() {
       <Route path="/results" element={<Results />} />
       <Route path="/confirm" element={<Confirm />} />
       <Route path="/store/login" element={<StoreLogin />} />
+      <Route path="/store/signup" element={<StoreSignup />} />
+      import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
+      <Route path="/admin" element={<AdminLogin />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
       {/* Store protected */}
       <Route
