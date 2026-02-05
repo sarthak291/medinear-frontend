@@ -7,9 +7,9 @@ function Results() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const query = searchParams.get("query");
-  const lat = searchParams.get("lat");
-  const lng = searchParams.get("lng");
+  const query = searchParams.get("query") || "";
+  const lat = Number(searchParams.get("lat"));
+  const lng = Number(searchParams.get("lng"));
   const nearbyOnly = searchParams.get("nearby") === "true";
 
   const [loading, setLoading] = useState(true);
@@ -17,30 +17,37 @@ function Results() {
   const [medicineName, setMedicineName] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // ✅ NEW (only for Did you mean)
   const [suggestion, setSuggestion] = useState(null);
 
   useEffect(() => {
     const fetchResults = async () => {
       try {
         setLoading(true);
+        setResults([]);
+
         let res;
 
         if (nearbyOnly) {
           res = await api.get("/search/nearby", {
             params: { lat, lng, radius: 50 },
           });
+
+          // Some APIs return array directly
+          const data = res.data?.results || res.data;
+
+          setResults(Array.isArray(data) ? data : []);
           setMedicineName("Nearby Medical Stores");
           setSuggestion(null);
         } else {
           res = await api.get("/search/medicine", {
             params: { query, lat, lng, radius: 50 },
           });
-          setMedicineName(res.data.medicine || query);
-          setSuggestion(res.data.suggestion || null);
-        }
 
-        setResults(Array.isArray(res.data.results) ? res.data.results : []);
+          setMedicineName(res.data?.medicine || query);
+          setSuggestion(res.data?.suggestion || null);
+
+          setResults(Array.isArray(res.data?.results) ? res.data.results : []);
+        }
       } catch (err) {
         console.error(err);
         setResults([]);
@@ -48,6 +55,13 @@ function Results() {
         setLoading(false);
       }
     };
+
+    // Prevent calling API with invalid coordinates
+    if (!lat || !lng) {
+      setLoading(false);
+      setResults([]);
+      return;
+    }
 
     fetchResults();
   }, [query, lat, lng, nearbyOnly]);
@@ -74,11 +88,23 @@ function Results() {
           {nearbyOnly ? "Nearby Medical Stores" : `Results for ${medicineName}`}
         </h2>
 
-        {/* ✅ DID YOU MEAN */}
-        {!nearbyOnly && suggestion && results.length === 0 && (
+        {/* ✅ DID YOU MEAN (show even if results exist) */}
+        {!nearbyOnly && suggestion && suggestion !== query && (
           <p className="text-sm text-gray-600 mb-6">
             Did you mean{" "}
-            <span className="text-blue-600 font-semibold">{suggestion}</span> ?
+            <button
+              onClick={() =>
+                navigate(
+                  `/results?query=${encodeURIComponent(
+                    suggestion
+                  )}&lat=${lat}&lng=${lng}`
+                )
+              }
+              className="text-blue-600 font-semibold hover:underline"
+            >
+              {suggestion}
+            </button>
+            ?
           </p>
         )}
 
@@ -89,9 +115,9 @@ function Results() {
         )}
 
         <div className="space-y-4">
-          {results.map((item, index) => (
+          {results.map((item) => (
             <div
-              key={index}
+              key={item.inventoryId || item.storeId || item._id || item.storeName}
               className="bg-white rounded shadow border p-4 flex justify-between"
             >
               <div>
@@ -108,7 +134,9 @@ function Results() {
 
               {!nearbyOnly && (
                 <div className="text-right">
-                  <p className="text-lg font-bold text-blue-600">₹{item.price}</p>
+                  <p className="text-lg font-bold text-blue-600">
+                    ₹{item.price}
+                  </p>
 
                   <button
                     onClick={() => setSelectedItem(item)}
