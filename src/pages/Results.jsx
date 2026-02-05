@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import BuyNowModal from "../components/BuyNowModal";
-const nearbyOnly = searchParams.get("nearby") === "true";
 
 function Results() {
   const [searchParams] = useSearchParams();
@@ -11,11 +10,15 @@ function Results() {
   const query = searchParams.get("query");
   const lat = searchParams.get("lat");
   const lng = searchParams.get("lng");
+  const nearbyOnly = searchParams.get("nearby") === "true";
 
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState([]);
   const [medicineName, setMedicineName] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
+
+  // ✅ NEW (only for Did you mean)
+  const [suggestion, setSuggestion] = useState(null);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -23,28 +26,24 @@ function Results() {
         setLoading(true);
         let res;
 
-    if (nearbyOnly) {
-     // 🔹 View all medical stores near user
-     res = await api.get(
-        `/search/nearby?lat=${lat}&lng=${lng}&radius=50`
-      );
-      setMedicineName("Nearby Medical Stores");
-    } else {
-  // 🔹 Normal medicine search
-   res = await api.get(
-    `/search/medicine?query=${query}&lat=${lat}&lng=${lng}&radius=50`
-   );
-     setMedicineName(res.data.medicine || query);
-  }
+        if (nearbyOnly) {
+          res = await api.get("/search/nearby", {
+            params: { lat, lng, radius: 50 },
+          });
+          setMedicineName("Nearby Medical Stores");
+          setSuggestion(null);
+        } else {
+          res = await api.get("/search/medicine", {
+            params: { query, lat, lng, radius: 50 },
+          });
+          setMedicineName(res.data.medicine || query);
+          setSuggestion(res.data.suggestion || null);
+        }
 
-    setResults(res.data.results || []);
-
-
-        setMedicineName(res.data.medicine || query);
-        setResults(res.data.results || []);
+        setResults(Array.isArray(res.data.results) ? res.data.results : []);
       } catch (err) {
         console.error(err);
-        alert("Failed to fetch results");
+        setResults([]);
       } finally {
         setLoading(false);
       }
@@ -55,22 +54,15 @@ function Results() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-lg text-gray-600">
-          Searching nearby medical stores…
-        </p>
+      <div className="min-h-screen flex items-center justify-center">
+        Loading…
       </div>
     );
   }
 
-  const bestPrice = results.length
-    ? Math.min(...results.map((r) => r.price))
-    : null;
-
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6">
       <div className="max-w-4xl mx-auto">
-        {/* 🔙 BACK */}
         <button
           onClick={() => navigate(-1)}
           className="text-sm text-blue-600 mb-4 hover:underline"
@@ -78,104 +70,70 @@ function Results() {
           ← Back
         </button>
 
-        {/* 🔹 HEADER */}
-        <h2 className="text-2xl font-semibold mb-1">
-  {nearbyOnly ? (
-    <span className="text-blue-600">
-      Nearby Medical Stores
-    </span>
-  ) : (
-    <>
-      Results for{" "}
-      <span className="text-blue-600">{medicineName}</span>
-    </>
-  )}
-</h2>
+        <h2 className="text-2xl font-semibold mb-2">
+          {nearbyOnly ? "Nearby Medical Stores" : `Results for ${medicineName}`}
+        </h2>
 
-        <p className="text-sm text-gray-500 mb-6">
-          Showing nearby medical stores with available stock
-        </p>
+        {/* ✅ DID YOU MEAN */}
+        {!nearbyOnly && suggestion && results.length === 0 && (
+          <p className="text-sm text-gray-600 mb-6">
+            Did you mean{" "}
+            <span className="text-blue-600 font-semibold">{suggestion}</span> ?
+          </p>
+        )}
 
-        {/* ❌ NO RESULTS */}
-        {results.length === 0 ? (
-          <div className="bg-white p-6 rounded-xl shadow text-center">
-            <p className="text-gray-600">
-              No medical stores found nearby.
-            </p>
+        {results.length === 0 && (
+          <div className="bg-white p-6 rounded shadow text-center">
+            No results found
           </div>
-        ) : (
-          <div className="space-y-4">
-            {results.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl shadow-sm border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-              >
-                {/* 🏪 STORE INFO */}
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold">
-                      {item.storeName}
-                    </h3>
+        )}
 
-                    {item.price === bestPrice && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
-                        Best Price
-                      </span>
-                    )}
-                  </div>
+        <div className="space-y-4">
+          {results.map((item, index) => (
+            <div
+              key={index}
+              className="bg-white rounded shadow border p-4 flex justify-between"
+            >
+              <div>
+                <h3 className="font-semibold">{item.storeName}</h3>
+                <p className="text-sm text-gray-600">{item.area}</p>
+                <p className="text-sm text-gray-500">{item.distance} km away</p>
 
-                  <p className="text-sm text-gray-600 mt-1">
-                    {item.area}
+                {!nearbyOnly && (
+                  <p className="text-sm">
+                    Stock: {item.quantityAvailable ?? "N/A"}
                   </p>
+                )}
+              </div>
 
-                  <div className="flex items-center gap-3 mt-2 text-sm">
-                    <span className="bg-gray-100 px-2 py-1 rounded">
-                      {item.distance} km away
-                    </span>
-
-                    <span className="bg-gray-100 px-2 py-1 rounded">
-                      Stock: {item.quantityAvailable}
-                    </span>
-
-                    {item.deliveryAvailable && (
-                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
-                        Home Delivery
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* 💰 PRICE + CTA */}
-                <div className="flex items-center justify-between sm:flex-col sm:items-end gap-3">
-                  <p className="text-2xl font-bold text-blue-600">
-                    ₹{item.price}
-                  </p>
+              {!nearbyOnly && (
+                <div className="text-right">
+                  <p className="text-lg font-bold text-blue-600">₹{item.price}</p>
 
                   <button
                     onClick={() => setSelectedItem(item)}
-                    className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+                    className="mt-2 bg-blue-600 text-white px-4 py-2 rounded"
                   >
                     Buy Now
                   </button>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* 🧾 BUY NOW MODAL */}
-      <BuyNowModal
-        open={!!selectedItem}
-        item={selectedItem}
-        medicineName={medicineName}
-        lat={lat}
-        lng={lng}
-        onClose={() => setSelectedItem(null)}
-        onSuccess={(reservationId) =>
-          navigate(`/confirm?reservationId=${reservationId}`)
-        }
-      />
+      {!nearbyOnly && (
+        <BuyNowModal
+          open={!!selectedItem}
+          item={selectedItem}
+          medicineName={medicineName}
+          lat={lat}
+          lng={lng}
+          onClose={() => setSelectedItem(null)}
+          onSuccess={(id) => navigate(`/confirm?reservationId=${id}`)}
+        />
+      )}
     </div>
   );
 }
