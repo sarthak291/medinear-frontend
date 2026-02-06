@@ -3,11 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 const Navbar = () => {
   const navigate = useNavigate();
 
-  const handleNearYou = () => {
-    // Redirect to results page without medicine filter
-    navigate("/results?nearby=true");
-  };
+  const findNearMe = () => {
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
 
+      navigate(`/results?nearby=true&lat=${latitude}&lng=${longitude}`);
+    },
+    (err) => {
+      alert("Location permission denied");
+      console.error(err);
+    }
+  );
+};
   return (
     <nav className="w-full bg-white shadow-sm px-6 py-3 flex items-center justify-between">
       
@@ -33,7 +41,7 @@ const Navbar = () => {
         </Link>
 
         <button
-          onClick={handleNearYou}
+          onClick={findNearMe}
           className="text-blue-600 hover:underline"
         >
           View Medical Stores Near You
@@ -42,5 +50,8 @@ const Navbar = () => {
     </nav>
   );
 };
+
+
+
 
 export default Navbar;

@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 import Home from "./pages/Home";
 import Results from "./pages/Results";
@@ -21,10 +21,18 @@ import Contact from "./pages/Contact";
 import Navbar from "./components/Navbar";
 
 function App() {
+  const location = useLocation();
+
+  // ✅ Navbar hide on these routes
+  const hideNavbar =
+    location.pathname === "/" ||
+    location.pathname.startsWith("/store") ||
+    location.pathname.startsWith("/admin");
+
   return (
     <>
-      {/* 🔹 GLOBAL NAVBAR */}
-      <Navbar />
+      {/* 🔹 GLOBAL NAVBAR (Only for user pages except Home) */}
+      {!hideNavbar && <Navbar />}
 
       <Routes>
         {/* ---------- Public ---------- */}
