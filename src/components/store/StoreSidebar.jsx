@@ -8,10 +8,9 @@ const StoreSidebar = () => {
 
       <nav className="flex flex-col gap-4">
         <NavLink to="/store/dashboard">Dashboard</NavLink>
-        <NavLink to="/store/inventory">Inventory</NavLink>
-        <NavLink to="/store/reservations">Reservations</NavLink>
         <NavLink to="/store/profile">Profile</NavLink>
         <NavLink to="/store/inventory">Inventory</NavLink>
+        <NavLink to="/store/reservations">Reservations</NavLink>
 
         <button
           onClick={logoutStore}

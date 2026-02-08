@@ -9,6 +9,7 @@ import StoreLogin from "./pages/store/StoreLogin";
 import Dashboard from "./pages/store/Dashboard";
 import Profile from "./pages/store/Profile";
 import StoreSignup from "./pages/store/StoreSignup";
+import Reservations from "./pages/store/Reservations";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -51,17 +52,12 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
         {/* ---------- Store Protected ---------- */}
-        <Route
-          path="/store"
-          element={
-            <StoreProtectedRoute>
-              <StoreLayout />
-            </StoreProtectedRoute>
-          }
-        >
+        <Route path="/store" element={<StoreProtectedRoute> <StoreLayout /> </StoreProtectedRoute> } >
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="profile" element={<Profile />} />
           <Route path="inventory" element={<Inventory />} />
+          <Route path="reservations" element={<Reservations />} />
+
         </Route>
       </Routes>
     </>

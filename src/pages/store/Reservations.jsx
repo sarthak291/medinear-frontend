@@ -25,9 +25,10 @@ function Reservations() {
   const updateStatus = async (reservationId, status) => {
     try {
       await api.put("/reservations/update-status", {
-        reservationId,
-        status,
+      reservationId: reservationId,
+      status: status,
       });
+
       fetchReservations();
     } catch (err) {
       console.error(err);
@@ -69,8 +70,9 @@ function Reservations() {
                 <p className="text-sm mt-2">
                   💊{" "}
                   {resv.medicines
-                    .map((m) => m.medicineId?.name)
-                    .join(", ")}
+                  .map((m) => m.medicineId?.name || "Unknown Medicine")
+                   .join(", ")}
+
                 </p>
 
                 <p className="text-xs text-gray-500 mt-1">
