@@ -40,6 +40,13 @@ const Navbar = () => {
           Contact Us
         </Link>
 
+        <Link
+          to="/cart"
+          className="text-gray-700 hover:text-blue-600"
+        >
+          Cart 🛒
+        </Link>
+
         <button
           onClick={findNearMe}
           className="text-blue-600 hover:underline"

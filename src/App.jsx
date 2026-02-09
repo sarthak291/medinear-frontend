@@ -3,6 +3,8 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Results from "./pages/Results";
 import Confirm from "./pages/Confirm";
+import Cart from "./pages/Cart";
+import CartResults from "./pages/CartResults";
 
 import Inventory from "./pages/store/Inventory";
 import StoreLogin from "./pages/store/StoreLogin";
@@ -23,16 +25,9 @@ import Navbar from "./components/Navbar";
 
 function App() {
   const location = useLocation();
-
-  // ✅ Navbar hide on these routes
-  const hideNavbar =
-    location.pathname === "/" ||
-    location.pathname.startsWith("/store") ||
-    location.pathname.startsWith("/admin");
-
+  const hideNavbar = location.pathname === "/";
   return (
     <>
-      {/* 🔹 GLOBAL NAVBAR (Only for user pages except Home) */}
       {!hideNavbar && <Navbar />}
 
       <Routes>
@@ -40,6 +35,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/results" element={<Results />} />
         <Route path="/confirm" element={<Confirm />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/cart-results" element={<CartResults />} />
+
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
 
@@ -52,12 +50,18 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
         {/* ---------- Store Protected ---------- */}
-        <Route path="/store" element={<StoreProtectedRoute> <StoreLayout /> </StoreProtectedRoute> } >
+        <Route
+          path="/store"
+          element={
+            <StoreProtectedRoute>
+              <StoreLayout />
+            </StoreProtectedRoute>
+          }
+        >
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="profile" element={<Profile />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="reservations" element={<Reservations />} />
-
         </Route>
       </Routes>
     </>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function Home() {
+  const [selected, setSelected] = useState(false);
   const [medicine, setMedicine] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const navigate = useNavigate();
@@ -45,6 +46,12 @@ function Home() {
 
   // 🔍 Autocomplete
   useEffect(() => {
+
+    if (selected) {
+    setSelected(false);
+    return;
+  }
+
     if (medicine.length < 2) {
       setSuggestions([]);
       return;
@@ -176,6 +183,7 @@ function Home() {
                       key={idx}
                       className="px-4 py-3 hover:bg-gray-100 cursor-pointer text-gray-800"
                       onClick={() => {
+                        setSelected(true);
                         setMedicine(item);
                         setSuggestions([]);
                       }}
@@ -188,12 +196,58 @@ function Home() {
             </div>
 
             {/* BUTTON */}
-            <button
-              onClick={getLocationAndSearch}
-              className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl text-lg font-semibold shadow-md transition"
-            >
-              🔍 Search Using My Location
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+  {/* 🛒 Add to Cart */}
+  <button
+    onClick={() => {
+      if (!medicine.trim()) {
+        alert("Please enter a medicine name");
+        return;
+      }
+
+      const cart = JSON.parse(localStorage.getItem("cartItems") || "[]");
+
+      const existing = cart.find(
+        (c) => c.medicineName.toLowerCase() === medicine.toLowerCase()
+      );
+
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({
+          medicineName: medicine,
+          quantity: 1,
+        });
+      }
+
+      localStorage.setItem("cartItems", JSON.stringify(cart));
+
+      alert("Added to cart ✅");
+      setMedicine("");
+      setSuggestions([]);
+    }}
+    className="w-full sm:w-1/2 border border-blue-600 text-blue-600 py-3 rounded-xl text-lg font-medium hover:bg-blue-50 transition"
+  >
+    🛒 Add to Cart
+  </button>
+
+  {/* 🔍 Search Now */}
+  <button
+    onClick={getLocationAndSearch}
+    className="w-full sm:w-1/2 bg-blue-600 text-white py-3 rounded-xl text-lg font-medium hover:bg-blue-700 transition"
+  >
+    Search Now 📍
+  </button>
+</div>
+
+{/* Go to Cart */}
+<button
+  onClick={() => navigate("/cart")}
+  className="w-full mt-4 bg-green-600 text-white py-3 rounded-xl text-lg font-medium hover:bg-green-700 transition"
+>
+  Go to Cart →
+</button>
+
 
             <p className="text-xs text-gray-500 text-center mt-4">
               Location is used only to find nearby medical stores.
