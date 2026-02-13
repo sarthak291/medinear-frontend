@@ -64,6 +64,14 @@ function StoreSignup() {
       alert("Please upload at least 1 image");
       return;
     }
+    const files = Array.from(e.target.files);
+
+    if (files.length > 3) {
+      alert("You can upload maximum 3 images");
+      return;
+    }
+
+setImages(files);
 
     setLoading(true);
 

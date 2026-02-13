@@ -26,6 +26,12 @@ const Navbar = () => {
 
       {/* Right Menu */}
       <div className="flex items-center gap-6 text-sm font-medium">
+         <Link
+          to="/"
+          className="text-gray-700 hover:text-blue-600"
+        >
+          Home
+        </Link>
         <Link
           to="/about"
           className="text-gray-700 hover:text-blue-600"
