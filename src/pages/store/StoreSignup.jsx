@@ -58,44 +58,42 @@ function StoreSignup() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (images.length < 1) {
-      alert("Please upload at least 1 image");
-      return;
-    }
-    const files = Array.from(e.target.files);
+  if (!images || images.length < 1) {
+    alert("Please upload at least 1 image");
+    return;
+  }
 
-    if (files.length > 3) {
-      alert("You can upload maximum 3 images");
-      return;
-    }
+  if (images.length > 3) {
+    alert("You can upload maximum 3 images");
+    return;
+  }
 
-setImages(files);
+  setLoading(true);
 
-    setLoading(true);
+  const data = new FormData();
+  Object.keys(form).forEach((key) => {
+    data.append(key, form[key]);
+  });
 
-    const data = new FormData();
-    Object.keys(form).forEach((key) => {
-      data.append(key, form[key]);
+  images.forEach((img) => data.append("images", img));
+
+  try {
+    await api.post("/store/signup", data, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
 
-    images.forEach((img) => data.append("images", img));
+    alert("Store registered successfully. Await verification ✅");
+    navigate("/store/login");
+  } catch (err) {
+    console.error(err);
+    alert(err.response?.data?.message || "Signup failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    try {
-      await api.post("/store/signup", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      alert("Store registered successfully. Await verification ✅");
-      navigate("/store/login");
-    } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Signup failed");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 flex items-center justify-center px-4 py-10">
@@ -243,13 +241,27 @@ setImages(files);
 
             <div className="mt-2 border-2 border-dashed border-gray-300 rounded-2xl p-4 bg-white">
               <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={(e) => setImages([...e.target.files])}
-                className="w-full text-sm text-gray-600"
-                required
-              />
+  type="file"
+  multiple
+  accept="image/*"
+  onChange={(e) => {
+    const files = e.target.files;
+
+    if (!files) return;
+
+    const selectedFiles = Array.from(files);
+
+    if (selectedFiles.length > 3) {
+      alert("Maximum 3 images allowed");
+      return;
+    }
+
+    setImages(selectedFiles);
+  }}
+  className="w-full text-sm text-gray-600"
+  required
+/>
+
 
               {images.length > 0 && (
                 <p className="text-xs text-green-600 mt-2">
